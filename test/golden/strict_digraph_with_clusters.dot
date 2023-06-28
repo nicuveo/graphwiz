@@ -1,0 +1,12 @@
+strict digraph {
+  subgraph cluster0 {
+    label="cluster A";
+    node1 [label="a"]
+  }
+  subgraph cluster2 {
+    label="cluster B";
+    node3 [label="b"]
+  }
+  node1 -> node3 [style="dotted"]
+  node1 -> node3 []
+}

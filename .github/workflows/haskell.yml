@@ -1,0 +1,99 @@
+name: code validation
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ghc: ['9.8', '9.10', '9.12']
+    name: build with GHC ${{ matrix.ghc }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: haskell-actions/setup@v2
+        id: setup
+        with:
+          ghc-version: ${{ matrix.ghc }}
+          cabal-version: 'latest'
+          cabal-update: true
+
+      - name: Configure the build
+        run: |
+          cabal configure --enable-tests --disable-documentation
+          cabal build --dry-run
+        # This last step generates dist-newstyle/cache/plan.json for the cache key.
+
+      - name: Restore cached dependencies
+        uses: actions/cache/restore@v3
+        id: cache
+        env:
+          key: ${{ runner.os }}-ghc-${{ steps.setup.outputs.ghc-version }}-cabal-${{ steps.setup.outputs.cabal-version }}
+        with:
+          path: ${{ steps.setup.outputs.cabal-store }}
+          key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
+          restore-keys: ${{ env.key }}-
+
+      - name: Install dependencies
+        run: cabal build all --only-dependencies
+
+      # Cache dependencies at this point, so that we do not have to rebuild them should the subsequent steps fail.
+      - name: Save cached dependencies
+        uses: actions/cache/save@v3
+        # Caches are immutable, trying to save with the same key would error.
+        if: ${{ steps.cache.outputs.cache-primary-key != steps.cache.outputs.cache-matched-key }}
+        with:
+          path: ${{ steps.setup.outputs.cabal-store }}
+          key: ${{ steps.cache.outputs.cache-primary-key }}
+
+      - name: Build
+        run: cabal build all
+
+      - name: Run tests
+        run: cabal test all
+
+      - name: Check cabal file
+        run: cabal check
+
+      - name: Build documentation
+        run: cabal haddock all
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: changed-files
+        uses: tj-actions/changed-files@v45
+        with:
+          files: "**/*.hs"
+          json: true
+          escape_json: false
+      - uses: haskell-actions/hlint-setup@v2
+      - if: steps.changed-files.outputs.all_changed_and_modified_files != '[]'
+        uses: haskell-actions/hlint-run@v2
+        with:
+          path: ${{ steps.changed-files.outputs.all_changed_and_modified_files }}
+
+  formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: changed-files
+        uses: tj-actions/changed-files@v45
+        with:
+          files: "**/*.hs"
+      - if: steps.changed-files.outputs.all_changed_and_modified_files
+        env:
+          TARGETS: ${{ steps.changed-files.outputs.all_changed_and_modified_files }}
+        run: |
+          curl -sL https://raw.github.com/haskell/stylish-haskell/main/scripts/latest.sh | sh -s -- --inplace $TARGETS
+          for f in $(git diff --name-only --diff-filter=M); do
+            echo "::error file=$f::File is not formatted properly."
+          done

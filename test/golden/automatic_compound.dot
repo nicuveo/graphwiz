@@ -1,0 +1,24 @@
+digraph {
+  compound="true";
+  subgraph cluster0 {
+    label="cluster A1";
+    subgraph cluster1 {
+      label="cluster A2";
+      subgraph cluster2 {
+        label="cluster A3";
+        node3 [label="a"]
+      }
+    }
+  }
+  subgraph cluster4 {
+    label="cluster B1";
+    subgraph cluster5 {
+      label="cluster B2";
+      subgraph cluster6 {
+        label="cluster B3";
+        node7 [label="b"]
+      }
+    }
+  }
+  node3 -> node7 [ltail="cluster0",lhead="cluster6"]
+}

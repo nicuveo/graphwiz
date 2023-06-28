@@ -1,0 +1,13 @@
+digraph {
+  subgraph cluster0 {
+    label="front end";
+    node1 [label="source code",style="filled",fillcolor="#c3ffd8"]
+    node2 [label="AST",style="filled",fillcolor="yellow"]
+    node1 -> node2 [label="parsing"]
+  }
+  subgraph cluster4 {
+    label="middle end";
+    node5 [label="IR",style="filled",fillcolor="salmon",shape="diamond"]
+    node2 -> node5 [label="lowering",style="dotted"]
+  }
+}

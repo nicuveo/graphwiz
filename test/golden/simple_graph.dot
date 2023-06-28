@@ -1,0 +1,14 @@
+graph {
+  node00 [label="a"]
+  node01 [label="b"]
+  node02 [label="c"]
+  node00 -- node01 []
+  node00 -- node01 []
+  node01 -- node02 []
+  node01 -- node02 []
+  subgraph subgraph07 {
+    node08 [label="d"]
+    node02 -- node08 []
+    node08 -- node00 []
+  }
+}
