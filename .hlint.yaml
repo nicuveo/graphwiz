@@ -1,1 +1,2 @@
 - ignore: {name: Redundant lambda}
+- ignore: {name: Use camelCase, within: [Text.Dot.Attributes]}

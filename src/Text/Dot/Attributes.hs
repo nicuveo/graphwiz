@@ -63,7 +63,7 @@ attributes e = entityAttributes . at e . non mempty
 -- This function is best used with the provided field accessors, such as
 -- 'fontcolor', to be more explicit about the way to deal with prevous values.
 defaults :: EntityType -> Lens' Attributes (Maybe Text) -> Lens' DotGraph (Maybe Text)
-defaults t l f d = (defaultAttributes . at t . non mempty . l) f d
+defaults t l = defaultAttributes . at t . non mempty . l
 
 -- | Retrieves the 'Attributes' of the latest created 'Entity'.
 --
