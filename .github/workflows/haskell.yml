@@ -1,4 +1,4 @@
-name: validation
+name: validate
 
 on:
   push:
@@ -167,13 +167,13 @@ jobs:
       - name: Merge reports
         id: merge_reports
         run: |
-          if test -r *.xml; then
+          if compgen -G "*.xml" &> /dev/null; then
               pip install junitparser==3.2.0
               junitparser merge --glob *.xml final-report.xml
-              echo "results:true" >> "$GITHUB_OUTPUT"
+              echo "results=true" >> "$GITHUB_OUTPUT"
           fi
       - uses: mikepenz/action-junit-report@v5
-        if: steps.merge_reports.output.results
+        if: steps.merge_reports.outputs.results
         with:
           annotate_only: true
           check_name: 'Haskell test suite'

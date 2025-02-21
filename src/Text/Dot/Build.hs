@@ -4,8 +4,12 @@ module Text.Dot.Build
   , (-->)
   , subgraphWith
   , subgraph
+  , subgraphWith_
+  , subgraph_
   , clusterWith
   , cluster
+  , clusterWith_
+  , cluster_
   ) where
 
 import "this" Prelude
@@ -24,7 +28,7 @@ import Text.Dot.Types
 -- | Creates a node in the graph, at the current path, with the given label.
 --
 -- The newly created node will be assigned all of the default 'Node' attributes
--- (see 'default'). This returns a new 'Entity' that uniquely identifies this
+-- (see 'defaults'). This returns a new 'Entity' that uniquely identifies this
 -- node in the graph, with the attribute "label" set to the given argument.
 --
 -- This function updates the 'its' entity to this node.
@@ -37,7 +41,7 @@ node desc = do
 -- | Creates an edge in the graph, at the current path.
 --
 -- The newly created edge will be assigned all of the default 'Edge' attributes
--- (see 'default'). This returns a new 'Entity' that uniquely identifies this
+-- (see 'defaults'). This returns a new 'Entity' that uniquely identifies this
 -- edge in the graph.
 --
 -- If an entity is a cluster, we set the graph's "compound" property to true,
@@ -74,48 +78,66 @@ edge a b = do
 -- | Creates a subgraph in the given context.
 --
 -- The newly created subgraph will be assigned all of the default 'Subgraph'
--- attributes (see 'default'). The argument to this function is a callback that
+-- attributes (see 'defaults'). The argument to this function is a callback that
 -- takes the newly minted 'Entity' and creates the corresponding subgraph.
 --
 -- This function updates the 'its' entity to this node *twice*: before executing
 -- the callback, and before returning.
 --
 -- @
---     graph do
---       _subID <- subgraphWith \_subID -> do
---         its fontcolor ?= "green" -- points to the subgraph
---         subID <- current           -- retrieve the subgraph ID
---         x <- node "x"
---         its fontcolor ?= "red"   -- points to node "x"
---         pure subID
---       its fontsize ?= "14"       -- points to the subgraph
+-- graph do
+--   (subgraphID, nodeID) <- subgraphWith \subgraphID -> do
+--     its fontcolor ?= "green" -- points to the subgraph
+--     x <- node "x"
+--     its fontcolor ?= "red"   -- points to node "x"
+--     pure x
+--   its fontsize ?= "14"       -- points to the subgraph
 -- @
 --
--- This returns the result of the subexpression.
-subgraphWith :: MonadDot m => (Entity -> m a) -> m a
+-- This returns a pair containing the 'Entity' and the result of the
+-- subexpression.
+subgraphWith :: MonadDot m => (Entity -> m a) -> m (Entity, a)
 subgraphWith = recurse Subgraph
 
 -- | Like 'subgraphWith', but the subexpression doesn't take the 'Entity' as
 -- argument.
-subgraph :: MonadDot m => m a -> m a
+subgraph :: MonadDot m => m a -> m (Entity, a)
 subgraph = recurse Subgraph . const
+
+-- | Like 'subgraphWith', but does not return the subgraph's 'Entity'.
+subgraphWith_ :: MonadDot m => (Entity -> m a) -> m a
+subgraphWith_ = fmap snd . recurse Subgraph
+
+-- | Like 'subgraphWith', but the subexpression doesn't take the 'Entity' as
+-- argument, and it does not return the subgraph's 'Entity'.
+subgraph_ :: MonadDot m => m a -> m a
+subgraph_ = fmap snd . recurse Subgraph . const
 
 -- | Like 'subgraphWith', but creates a cluster instead.
 --
 -- The created entity will use the default 'Cluster' attributes.
-clusterWith :: MonadDot m => (Entity -> m a) -> m a
+clusterWith :: MonadDot m => (Entity -> m a) -> m (Entity, a)
 clusterWith = recurse Cluster
 
 -- | Like 'clusterWith', but the subexpression doesn't take the 'Entity' as
 -- argument.
-cluster :: MonadDot m => m a -> m a
+cluster :: MonadDot m => m a -> m (Entity, a)
 cluster = recurse Cluster . const
+
+-- | Like 'clusterWith', but does not return the cluster's 'Entity'.
+clusterWith_ :: MonadDot m => (Entity -> m a) -> m a
+clusterWith_ = fmap snd . recurse Cluster
+
+-- | Like 'clusterWith', but the subexpression doesn't take the 'Entity' as
+-- argument, and it does not return the cluster's 'Entity'.
+cluster_ :: MonadDot m => m a -> m a
+cluster_ = fmap snd . recurse Cluster . const
 
 
 --------------------------------------------------------------------------------
 -- Internal helpers
 
-recurse :: MonadDot m => EntityType -> (Entity -> m a) -> m a
+recurse :: MonadDot m => EntityType -> (Entity -> m a) -> m (Entity, a)
 recurse etype callback = do
   entity <- register etype
   contextStack %= NE.cons mempty
@@ -123,7 +145,7 @@ recurse etype callback = do
   sub <- popContext
   subgraphInfo . at entity ?= sub
   latest .= entity
-  pure result
+  pure (entity, result)
 
 register :: MonadDot m => EntityType -> m Entity
 register etype = do

@@ -10,7 +10,7 @@ main =
     digraph do
       defaults Node style ?= "filled"
 
-      ast <- cluster do
+      ast <- cluster_ do
         its label ?= "front end"
 
         source <- node "source code"

@@ -19,6 +19,7 @@ newtype DotT m a = DotT (DotGraph -> Path -> m (a, DotGraph))
     , Monad
     , MonadReader Path
     , MonadState  DotGraph
+    , MonadIO
     ) via (StateT DotGraph (ReaderT Path m))
 
 -- | An alias for @DotT Identity@.
