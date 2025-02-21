@@ -1,18 +1,19 @@
-cabal-version:      2.4
+cabal-version:      3.4
 name:               graphwiz
-version:            0.8.0
+synopsis:           Monadic DOT graph builder DSL
+version:            1.0.0
+category:           Data, Text
 license:            BSD-3-Clause
 license-file:       LICENSE
 copyright:          Copyright (C) 2025 Antoine Leblanc
 maintainer:         nicuveo@gmail.com
 author:             Antoine Leblanc
 homepage:           https://github.com/nicuveo/graphwiz
-bug-reports:        https://github.com/nicuveo/graphwiz
-synopsis:           DOT graph builder
+bug-reports:        https://github.com/nicuveo/graphwiz/issues
+tested-with:        GHC ==9.8 || ==9.10 || ==9.12
 description:
   Please see the README on GitHub at <https://github.com/nicuveo/graphwiz#readme>
 
-category:           Data, Text
 extra-source-files:
   .gitignore
   .stylish-haskell.yaml
@@ -65,6 +66,7 @@ common setup
     RoleAnnotations
     ScopedTypeVariables
     StandaloneDeriving
+    StrictData
     TupleSections
     TypeApplications
     TypeFamilies
@@ -72,8 +74,11 @@ common setup
     ViewPatterns
 
   ghc-options:
-    -Wcompat -Wall -Wno-unused-do-bind -fwarn-tabs
-    -fwarn-unused-packages -foptimal-applicative-do -fwrite-ide-info
+    -Wall -Wcompat -Widentities -Wincomplete-uni-patterns
+    -Winvalid-haddock -Wpartial-fields -Wredundant-constraints -Wtabs
+    -Wunused-packages -Wno-unused-do-bind -fhide-source-paths
+    -foptimal-applicative-do -funbox-small-strict-fields
+    -fwrite-ide-info
 
 library
   import:         setup
@@ -141,15 +146,13 @@ test-suite tests
   default-language:   GHC2021
 
 executable example
-  import:           setup
-  main-is:          Main.hs
-  hs-source-dirs:   example
+  import:             setup
+  main-is:            Main.hs
+  hs-source-dirs:     example
   build-depends:
     , base
     , graphwiz
     , lens
     , text-builder
-  default-extensions:
-    ImplicitPrelude
 
-  default-language: GHC2021
+  default-extensions: ImplicitPrelude
