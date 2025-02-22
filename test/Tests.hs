@@ -19,7 +19,8 @@ import Test.Tasty.Runners.AntXML
 main :: IO ()
 main = do
   args <- getArgs
-  let tests = testGroup "graphwiz" ({- AUTOCOLLECT.MAIN.tests -})
+  suiteName <- lookupEnv "TEST_SUITE_NAME"
+  let tests = testGroup (fromMaybe "graphwiz" suiteName) ({- AUTOCOLLECT.MAIN.tests -})
   if any ("--xml" `isPrefixOf`) args
   then defaultMainWithIngredients [antXMLRunner] tests
   else defaultMain tests

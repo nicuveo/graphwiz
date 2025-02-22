@@ -12,7 +12,6 @@ homepage:           https://github.com/nicuveo/graphwiz#readme
 bug-reports:        https://github.com/nicuveo/graphwiz/issues
 tested-with:        GHC ==9.8 || ==9.10 || ==9.12
 description:        Small monadic DSL to build Graphviz DOT files.
-
 extra-source-files:
   .gitignore
   .stylish-haskell.yaml
@@ -60,7 +59,9 @@ common setup
 
 library
   import:         setup
+
   if flag(coverage)
+    other-modules:   Prelude
     exposed-modules:
       Text.Dot
       Text.Dot.Attributes
@@ -69,7 +70,6 @@ library
       Text.Dot.Render
       Text.Dot.Types
 
-    other-modules:   Prelude
   else
     exposed-modules: Text.Dot
     other-modules:
@@ -79,6 +79,7 @@ library
       Text.Dot.Monad
       Text.Dot.Render
       Text.Dot.Types
+
   hs-source-dirs: common src
   build-depends:
     , base                  >=4.16 && <5
@@ -98,6 +99,7 @@ test-suite tests
   other-modules:
     Golden
     Prelude
+
   hs-source-dirs:     common test
   ghc-options:        -F -pgmF=tasty-autocollect
   build-tool-depends: tasty-autocollect:tasty-autocollect
