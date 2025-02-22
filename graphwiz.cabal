@@ -97,8 +97,9 @@ test-suite tests
   type:               exitcode-stdio-1.0
   main-is:            Tests.hs
   other-modules:
-    Golden
     Prelude
+    Reporter
+    Golden
 
   hs-source-dirs:     common test
   ghc-options:        -F -pgmF=tasty-autocollect
@@ -106,13 +107,15 @@ test-suite tests
   build-depends:
     , base                  >=4.16 && <5
     , containers
+    , directory
     , filepath
     , graphwiz
     , hashable
     , lens
     , mtl
+    , stm
+    , tagged
     , tasty
-    , tasty-ant-xml
     , tasty-autocollect
     , tasty-golden
     , text

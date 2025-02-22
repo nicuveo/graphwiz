@@ -100,9 +100,11 @@ jobs:
     needs: [generate-matrix, check-lint, check-format]
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
     env:
       TEST_SUITE_NAME: graphwiz-${{ matrix.os }}-${{ matrix.ghc }}
+      REPORT_NAME: report-${{ matrix.os }}-ghc-${{ matrix.ghc }}
     steps:
       - name: "setup: checkout"
         uses: actions/checkout@v4
@@ -116,9 +118,7 @@ jobs:
           cabal-update: true
 
       - name: "setup: configure"
-        run: |
-          echo "REPORT_NAME=report-${{ runner.os }}-ghc-${{ matrix.ghc }}.xml" >> $GITHUB_ENV
-          cabal build --dry-run
+        run: cabal build --dry-run
 
       - name: "check: cabal"
         run: cabal check
@@ -144,7 +144,7 @@ jobs:
         run: cabal haddock all
 
       - name: "check: tests"
-        run: cabal test --test-options "--xml=${{ env.REPORT_NAME }}" all
+        run: cabal test --test-options "--report=${{ env.REPORT_NAME }}" all
         id: tests
 
       - name: "cleanup: upload tests"
@@ -152,7 +152,7 @@ jobs:
         if: always()
         with:
           name: ${{ env.REPORT_NAME }}
-          path: ${{ env.REPORT_NAME }}
+          path: ${{ format('{0}*', env.REPORT_NAME) }}
 
   # Publish relevant findings
   publish-test-report:
@@ -168,9 +168,14 @@ jobs:
           pattern: report-*
           merge-multiple: true
       - name: Publish reports
-        uses: mikepenz/action-junit-report@v5
-        with:
-          annotate_only: true
-          report_paths: '*.xml'
-          check_name: "Haskell test suite"
-          group_reports: false
+        run: |
+          echo "| Suite | Tests | :white_check_mark: Passed | :x: Failed | :stopwatch: Duration (ms) |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-------|-------|---------------------------|------------|---------------------------|" >> "$GITHUB_STEP_SUMMARY"
+          cat report*summary.md >> "$GITHUB_STEP_SUMMARY"
+          if test -n "$(cat report*failing.md)"; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "<table>" >> "$GITHUB_STEP_SUMMARY"
+            echo "<tr><th>:x: Failing test</th><th>Error message</th></tr>" >> "$GITHUB_STEP_SUMMARY"
+            cat report*failing.md >> "$GITHUB_STEP_SUMMARY"
+            echo "</table>" >> "$GITHUB_STEP_SUMMARY"
+          fi

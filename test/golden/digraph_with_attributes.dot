@@ -1,5 +1,5 @@
 digraph {
-  node0 [color="red",label="a",distortion="3"]
+  node0 [color="red",label="a",distortion="2"]
   node1 [label="b"]
   node2 [label="c"]
   node0 -> node1 [style="dotted"]
