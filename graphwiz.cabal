@@ -8,11 +8,10 @@ license-file:       LICENSE
 copyright:          Copyright (C) 2025 Antoine Leblanc
 maintainer:         nicuveo@gmail.com
 author:             Antoine Leblanc
-homepage:           https://github.com/nicuveo/graphwiz
+homepage:           https://github.com/nicuveo/graphwiz#readme
 bug-reports:        https://github.com/nicuveo/graphwiz/issues
 tested-with:        GHC ==9.8 || ==9.10 || ==9.12
-description:
-  Please see the README on GitHub at <https://github.com/nicuveo/graphwiz#readme>
+description:        Small monadic DSL to build Graphviz DOT files.
 
 extra-source-files:
   .gitignore

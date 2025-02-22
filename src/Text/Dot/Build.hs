@@ -25,10 +25,10 @@ import Text.Dot.Types
 --------------------------------------------------------------------------------
 -- Entity creation functions
 
--- | Creates a node in the graph, at the current path, with the given label.
+-- | Creates a node in the graph, at the current t'Path', with the given label.
 --
 -- The newly created node will be assigned all of the default 'Node' attributes
--- (see 'defaults'). This returns a new 'Entity' that uniquely identifies this
+-- (see 'defaults'). This returns a new t'Entity' that uniquely identifies this
 -- node in the graph, with the attribute "label" set to the given argument.
 --
 -- This function updates the 'its' entity to this node.
@@ -38,17 +38,17 @@ node desc = do
   its label ?= desc
   pure entity
 
--- | Creates an edge in the graph, at the current path.
+-- | Creates an edge in the graph, at the current t'Path'.
 --
 -- The newly created edge will be assigned all of the default 'Edge' attributes
--- (see 'defaults'). This returns a new 'Entity' that uniquely identifies this
+-- (see 'defaults'). This returns a new t'Entity' that uniquely identifies this
 -- edge in the graph.
 --
 -- If an entity is a cluster, we set the graph's "compound" property to true,
 -- and we attempt to locate any node within it. If there isn't any, we fail
 -- silently by outputing a valid but unexpected edge.
 --
--- This function updates the 'its' 'Entity' to this node.
+-- This function updates the 'its' entity to this edge.
 edge :: MonadDot m => Entity -> Entity -> m Entity
 edge a b = do
   na <- getTail a
@@ -62,16 +62,14 @@ edge a b = do
 -- This can be used in both directed and undirected graphs: the rendering
 -- process will tke care of using the correct symbol in the generated DOT file.
 --
--- @
---     graph do
---       x <- node "x"
---       y <- node "y"
---       z <- node "z"
---       x --> y
---       x --> z
--- @
+-- > graph do
+-- >   x <- node "x"
+-- >   y <- node "y"
+-- >   z <- node "z"
+-- >   x --> y
+-- >   x --> z
 --
--- This function updates the 'its' 'Entity' to this node.
+-- This function updates the 'its' entity to this edge.
 (-->) :: MonadDot m => Entity -> Entity -> m Entity
 (-->) = edge
 
@@ -79,37 +77,35 @@ edge a b = do
 --
 -- The newly created subgraph will be assigned all of the default 'Subgraph'
 -- attributes (see 'defaults'). The argument to this function is a callback that
--- takes the newly minted 'Entity' and creates the corresponding subgraph.
+-- takes the newly minted t'Entity' and creates the corresponding subgraph.
 --
 -- This function updates the 'its' entity to this node *twice*: before executing
 -- the callback, and before returning.
 --
--- @
--- graph do
---   (subgraphID, nodeID) <- subgraphWith \subgraphID -> do
---     its fontcolor ?= "green" -- points to the subgraph
---     x <- node "x"
---     its fontcolor ?= "red"   -- points to node "x"
---     pure x
---   its fontsize ?= "14"       -- points to the subgraph
--- @
+-- > graph do
+-- >   (subgraphID, nodeID) <- subgraphWith \subgraphID -> do
+-- >     its fontcolor ?= "green" -- points to the subgraph
+-- >     x <- node "x"
+-- >     its fontcolor ?= "red"   -- points to node "x"
+-- >     pure x
+-- >   use (its fontcolor)        -- points to the subgraph, returns green
 --
--- This returns a pair containing the 'Entity' and the result of the
+-- This returns a pair containing the subgraph's t'Entity' and the result of the
 -- subexpression.
 subgraphWith :: MonadDot m => (Entity -> m a) -> m (Entity, a)
 subgraphWith = recurse Subgraph
 
--- | Like 'subgraphWith', but the subexpression doesn't take the 'Entity' as
+-- | Like 'subgraphWith', but the subexpression doesn't take the t'Entity' as
 -- argument.
 subgraph :: MonadDot m => m a -> m (Entity, a)
 subgraph = recurse Subgraph . const
 
--- | Like 'subgraphWith', but does not return the subgraph's 'Entity'.
+-- | Like 'subgraphWith', but does not return the subgraph's t'Entity'.
 subgraphWith_ :: MonadDot m => (Entity -> m a) -> m a
 subgraphWith_ = fmap snd . recurse Subgraph
 
--- | Like 'subgraphWith', but the subexpression doesn't take the 'Entity' as
--- argument, and it does not return the subgraph's 'Entity'.
+-- | Like 'subgraphWith', but the subexpression doesn't take the t'Entity' as
+-- argument, and it does not return the subgraph's t'Entity'.
 subgraph_ :: MonadDot m => m a -> m a
 subgraph_ = fmap snd . recurse Subgraph . const
 
@@ -119,17 +115,17 @@ subgraph_ = fmap snd . recurse Subgraph . const
 clusterWith :: MonadDot m => (Entity -> m a) -> m (Entity, a)
 clusterWith = recurse Cluster
 
--- | Like 'clusterWith', but the subexpression doesn't take the 'Entity' as
+-- | Like 'clusterWith', but the subexpression doesn't take the t'Entity' as
 -- argument.
 cluster :: MonadDot m => m a -> m (Entity, a)
 cluster = recurse Cluster . const
 
--- | Like 'clusterWith', but does not return the cluster's 'Entity'.
+-- | Like 'clusterWith', but does not return the cluster's t'Entity'.
 clusterWith_ :: MonadDot m => (Entity -> m a) -> m a
 clusterWith_ = fmap snd . recurse Cluster
 
--- | Like 'clusterWith', but the subexpression doesn't take the 'Entity' as
--- argument, and it does not return the cluster's 'Entity'.
+-- | Like 'clusterWith', but the subexpression doesn't take the t'Entity' as
+-- argument, and it does not return the cluster's t'Entity'.
 cluster_ :: MonadDot m => m a -> m a
 cluster_ = fmap snd . recurse Cluster . const
 

@@ -3,7 +3,8 @@ module Text.Dot.Monad where
 import "this" Prelude
 
 import Control.Lens
-import Data.List.NonEmpty qualified as NE
+import Control.Monad.RWS.Class
+import Data.List.NonEmpty      qualified as NE
 
 import Text.Dot.Types
 
@@ -20,12 +21,17 @@ newtype DotT m a = DotT (DotGraph -> Path -> m (a, DotGraph))
     , MonadReader Path
     , MonadState  DotGraph
     , MonadIO
+    , MonadWriter w
+    , MonadError  e
     ) via (StateT DotGraph (ReaderT Path m))
+
+instance MonadTrans DotT where
+  lift x = DotT \s _ -> fmap (,s) x
 
 -- | An alias for @DotT Identity@.
 type Dot = DotT Identity
 
--- | The constraint that all Dot functions require.
+-- | The constraint that all functions require.
 --
 -- We choose to express this as a constraint rather than a typeclass
 -- for simplicity.
@@ -44,18 +50,16 @@ run e (DotT f) = snd <$> f (initialGraph e) (Path $ pure e)
 -- subgraphs / clusters between the root of the graph and the current
 -- location.
 --
--- @
---    graph do
---      p1 <- path     -- returns []
---      subgraph do
---        cluster do
---          p2 <- path -- returns [clusterEntity, subgraphEntity]
---          doStuff
--- @
+-- > graph do
+-- >   p1 <- path     -- returns [$graphID]
+-- >   subgraph do
+-- >     cluster do
+-- >       p2 <- path -- returns [$clusterID, $subgraphID, $graphID]
+-- >       doStuff
 path :: MonadDot m => m (NonEmpty Entity)
 path = asks unwrapPath
 
--- | Retrieves the unique ID of the last created 'Entity'.
+-- | Retrieves the unique ID of the last created t'Entity'.
 itsID :: MonadDot m => m Entity
 itsID = use latest
 

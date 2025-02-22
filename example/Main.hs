@@ -8,7 +8,7 @@ main :: IO ()
 main =
   TB.putLnToStdOut $
     digraph do
-      defaults Node style ?= "filled"
+      defaults Node . style ?= "filled"
 
       ast <- cluster_ do
         its label ?= "front end"

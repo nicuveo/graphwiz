@@ -9,8 +9,6 @@ It's a "wizard" for Graphviz's DOT format, hence the name "GraphWiz".
 [Action]: https://github.com/nicuveo/graphwiz/actions/workflows/haskell.yml?query=branch%3Amain
 [Shield]: https://img.shields.io/github/actions/workflow/status/nicuveo/graphwiz/haskell.yml?event=push&style=flat&branch=main&label=build
 
-<br />
-
 ## Overview
 
 ### Graph creation
@@ -38,7 +36,8 @@ Attributes are represented as a simple mapping from `Text` to `Text`, to avoid b
 
 ```haskell
 graphT do
-  defaults Node shape ?= "hexagon"
+  defaults Edge .= [("style", "dotted"), ("color", "blue")]
+  defaults Node . shape ?= "hexagon"
   x <- node "x"
   its fontcolor ?= "red"
   liftIO $ print =<< use (attributes x)
@@ -70,8 +69,6 @@ graph do
   cluster_a --> cluster_b
 ```
 
-<br />
-
 ## Full example
 
 From the [example](/example) folder:
@@ -81,9 +78,9 @@ From the [example](/example) folder:
 main =
   TB.putLnToStdOut $
     digraph do
-      defaults Node style ?= "filled"
+      defaults Node . style ?= "filled"
 
-      ast <- cluster do
+      ast <- cluster_ do
         its label ?= "front end"
 
         source <- node "source code"

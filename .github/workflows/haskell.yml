@@ -176,5 +176,6 @@ jobs:
         if: steps.merge_reports.outputs.results
         with:
           annotate_only: true
+          detailed_summary: true
           check_name: 'Haskell test suite'
           report_paths: 'final-report.xml'

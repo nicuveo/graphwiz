@@ -34,10 +34,10 @@ import Text.Dot.Types
 
 -- | Renders a given graph.
 --
--- Given a DotT expression that builds a graph, this function evaluates it and
--- builds an undirected non-strict graph. It returns the result in the
--- underlying monad, as a 'Builder'. The callback takes the graph's identity as
--- argument.
+-- Given a t'DotT' expression that builds a graph, this function evaluates it
+-- and builds an undirected non-strict graph. It returns the result in the
+-- underlying monad, as a 'Builder'. The callback takes the graph's identifier
+-- as argument.
 --
 -- The result of the graph building expression itself is ignored.
 graphWithT :: Monad m => (Entity -> DotT m a) -> m Builder
@@ -45,7 +45,7 @@ graphWithT = render "graph" "--"
 
 -- | Renders a given graph.
 --
--- Like 'graphWithT', but the expression doesn't take the entity as agument.
+-- Like 'graphWithT', but the expression doesn't take the identifier as agument.
 graphT :: Monad m => DotT m a -> m Builder
 graphT = render "graph" "--" . const
 
@@ -63,9 +63,10 @@ graph = runIdentity . render "graph" "--" . const
 
 -- | Renders a given graph.
 --
--- Given a DotT expression that builds a graph, this function evaluates it and
--- builds a directed non-strict graph. It returns the result in the underlying
--- monad, as a 'Builder'. The callback takes the graph's identity as argument.
+-- Given a t'DotT' expression that builds a graph, this function evaluates it
+-- and builds a directed non-strict graph. It returns the result in the
+-- underlying monad, as a 'Builder'. The callback takes the graph's identifier
+-- as argument.
 --
 -- The result of the graph building expression itself is ignored.
 digraphWithT :: Monad m => (Entity -> DotT m a) -> m Builder
@@ -91,9 +92,10 @@ digraph = runIdentity . render "digraph" "->" . const
 
 -- | Renders a given graph.
 --
--- Given a DotT expression that builds a graph, this function evaluates it and
--- builds an undirected strict graph. It returns the result in the underlying
--- monad, as a 'Builder'. The callback takes the graph's identity as argument.
+-- Given a t'DotT' expression that builds a graph, this function evaluates it
+-- and builds an undirected strict graph. It returns the result in the
+-- underlying monad, as a 'Builder'. The callback takes the graph's identifier
+-- as argument.
 --
 -- The result of the graph building expression itself is ignored.
 strictGraphWithT :: Monad m => (Entity -> DotT m a) -> m Builder
@@ -119,9 +121,9 @@ strictGraph = runIdentity . render "strict graph" "--" . const
 
 -- | Renders a given graph.
 --
--- Given a DotT expression that builds a graph, this function evaluates it and
--- builds a directed strict graph. It returns the result in the underlying
--- monad, as a 'Builder'. The callback takes the graph's identity as argument.
+-- Given a t'DotT' expression that builds a graph, this function evaluates it
+-- and builds a directed strict graph. It returns the result in the underlying
+-- monad, as a 'Builder'. The callback takes the graph's identifier as argument.
 --
 -- The result of the graph building expression itself is ignored.
 strictDigraphWithT :: Monad m => (Entity -> DotT m a) -> m Builder

@@ -10,29 +10,27 @@ import Text.Dot.Types
 --------------------------------------------------------------------------------
 -- Attributes access
 
--- | Retrieves the 'Attributes' of the given 'Entity'.
+-- | Retrieves the 'Attributes' of the given t'Entity'.
 --
 -- Given an entity attribute, return a lens to the corresponding attributes map
--- in a given 'DotGraph', which is an internal opaque type. This is meant to be
--- used inside the 'DotT' monad, relying on the fact that it is a State monad
--- under the hood.
+-- in a given 'Text.Dot.DotGraph', which is an internal opaque type. This is
+-- meant to be used inside the 'Text.Dot.DotT' monad, relying on the fact that
+-- it is a State monad under the hood.
 --
 -- Using @OverloadedLists@ makes working with the full attributes map a bit
 -- easier.
 --
--- @
---     graph do
---       x <- node "x"
---
---       -- replaces the entire mapping (erases the label!)
---       attributes e .= [("fontcolor", "red")]
---
---       -- combines the existing mapping with the new one, favoring old values
---       attributes e <>= [("fontcolor", "blue"), ("fontsize", "12")]
---
---       -- combines the existing mapping with the new one, favoring new values
---       attributes e <>:= [("fontcolor", "blue"), ("fontsize", "12")]
--- @
+-- > graph do
+-- >   x <- node "x"
+-- >
+-- >   -- replaces the entire mapping (erases the label!)
+-- >   attributes x .= [("fontcolor", "red")]
+-- >
+-- >   -- combines the existing mapping with the new one, favoring old values
+-- >   attributes x <>= [("fontcolor", "blue"), ("fontsize", "12")]
+-- >
+-- >   -- combines the existing mapping with the new one, favoring new values
+-- >   attributes x <>:= [("fontcolor", "blue"), ("fontsize", "12")]
 --
 -- This function is best used with the provided field accessors, such as
 -- 'fontcolor', to be more explicit about the way to deal with prevous values.
@@ -42,49 +40,46 @@ attributes e = entityAttributes . at e . non mempty
 -- | Retrieves the default 'Attributes' of the given 'EntityType'.
 --
 -- Given an entity type, return a lens to the corresponding default attributes
--- map in a given 'DotGraph', which is an internal opaque type. This is meant to
--- be used inside the 'DotT' monad, relying on the fact that it is a State monad
--- under the hood.
+-- map in a given 'Text.Dot.DotGraph', which is an internal opaque type. This is
+-- meant to be used inside the 'Text.Dot.DotT' monad, relying on the fact that
+-- it is a State monad under the hood.
 --
 -- After modifying the defaults for a given entity type, any new such entity
 -- will have its attributes set to the new default values.
 --
--- @
---     graph do
---       x <- node "x"
---       use (its color) -- Nothing
---
---       defaults Node color ?= "red"
---
---       y <- node "y"
---       use (its color) -- Just "red"
--- @
+-- > graph do
+-- >   node "x"
+-- >   use (its fillcolor) -- Nothing
+-- >
+-- >   defaults Cluster . style ?= "dashed"
+-- >   defaults Node <>= [("style", "filled"), ("fillcolor", "forestgreen")]
+-- >
+-- >   node "y"
+-- >   use (its fillcolor) -- Just "forestgreen"
 --
 -- This function is best used with the provided field accessors, such as
 -- 'fontcolor', to be more explicit about the way to deal with prevous values.
-defaults :: EntityType -> Lens' Attributes (Maybe Text) -> Lens' DotGraph (Maybe Text)
-defaults t l = defaultAttributes . at t . non mempty . l
+defaults :: EntityType -> Lens' DotGraph Attributes
+defaults t = defaultAttributes . at t . non mempty
 
--- | Retrieves the 'Attributes' of the latest created 'Entity'.
+-- | Retrieves an attribute from the latest created t'Entity'.
 --
--- This lens focuses on a 'DotGraph', an opaque internal type, and is meant to
--- be used from within the 'DotT' monad (see 'attributes'). It always focuses on
--- the latest created entity: the top-level graph, a node, an edge, a subgraph,
--- or a cluster.
+-- Given a lens for a specific attribute, such as 'style' or 'label', this
+-- combinator creates a lens that points to that attribute for the latest
+-- created t'Entity'. Like 'attributes', it is meant to be used within the
+-- 'Text.Dot.DotT' monad.
 --
--- @
---     graph do
---       its title .= "my graph"
---
---       node "bar"
---       its fontsize .= "34"
---
---       edge "bar" "bar"
---       its style .= "dotted"
---
---       cluster do
---         its label .= "cluster"
--- @
+-- > graph do
+-- >   its title ?= "my graph"
+-- >
+-- >   bar <- node "bar"
+-- >   its fontsize ?= "34"
+-- >
+-- >   edge bar bar
+-- >   its style ?= "dotted"
+-- >
+-- >   cluster do
+-- >     its label ?= "cluster"
 its :: Lens' Attributes (Maybe Text) -> Lens' DotGraph (Maybe Text)
 its l f d = (attributes (_latest d) . l) f d
 
@@ -92,24 +87,25 @@ its l f d = (attributes (_latest d) . l) f d
 --
 -- This makes the code a tiny bit more natural when accessing fields by name:
 --
--- @
---     graph do
---       x <- node "x"
+-- > graph do
+-- >   node "x"
+-- >
+-- >   -- replace the old value, if any
+-- >   its (attribute "fontcolor") ?= "red"
+-- >   its (attribute "fontcolor") .= Just "red"
+-- >
+-- >   -- erase the attribute
+-- >   its (attribute "fontcolor") .= Nothing
+-- >
+-- >   -- set the value if it wasn't previously set
+-- >   its (attribute "fontcolor") %= ifAbsent "blue"
 --
---       -- replace the old value, if any
---       its (attribute "fontcolor") ?= "red"
---       its (attribute "fontcolor") .= Just "red"
---
---       -- erase the attribute
---       its (attribute "fontcolor") .= Nothing
---
---       -- set the value if it wasn't previously set
---       its (attribute "fontcolor") %= ifAbsent "blue"
--- @
+-- It is however preferable to use one of the provided attribute lenses to avoid
+-- raw strings.
 attribute :: Text -> Lens' Attributes (Maybe Text)
 attribute = at
 
--- | Replaces a maybe value only if it wasn't set.
+-- | Replaces a 'Maybe' value only if it wasn't set.
 --
 -- >>> ifAbsent "foo" Nothing
 -- Just "foo"
@@ -119,6 +115,9 @@ attribute = at
 --
 -- This is best used in conjuction with 'attribute', or one of the explicit
 -- attribute accessors.
+--
+-- > foo <- node "foo"
+-- > its fillcolor %= ifAbsent "blue"
 ifAbsent :: a -> Maybe a -> Maybe a
 ifAbsent x m = m <|> Just x
 
@@ -126,35 +125,35 @@ ifAbsent x m = m <|> Just x
 --------------------------------------------------------------------------------
 -- All attributes
 
--- | Maps to the "_background" attribute.
+-- | Maps to the @_background@ attribute.
 background         :: Lens' Attributes (Maybe Text)
 background         = attribute "_background"
 
--- | Maps to the "Dackground" attribute.
+-- | Maps to the @Damping@ attribute.
 damping            :: Lens' Attributes (Maybe Text)
 damping            = attribute "Damping"
 
--- | Maps to the "cluster" attribute.
+-- | Maps to the @cluster@ attribute.
 isCcluster         :: Lens' Attributes (Maybe Text)
 isCcluster         = attribute "cluster"
 
--- | Maps to the "K" attribute.
+-- | Maps to the @K@ attribute.
 k                  :: Lens' Attributes (Maybe Text)
 k                  = attribute "K"
 
--- | Maps to the "class" attribute.
+-- | Maps to the @class@ attribute.
 svgClass           :: Lens' Attributes (Maybe Text)
 svgClass           = attribute "class"
 
--- | Maps to the "id" attribute.
+-- | Maps to the @id@ attribute.
 svgID              :: Lens' Attributes (Maybe Text)
 svgID              = attribute "id"
 
--- | Maps to the "TBbalance" attribute.
+-- | Maps to the @TBbalance@ attribute.
 tbbalance          :: Lens' Attributes (Maybe Text)
 tbbalance          = attribute "TBbalance"
 
--- | Maps to the "URL" attribute.
+-- | Maps to the @URL@ attribute.
 url                :: Lens' Attributes (Maybe Text)
 url                = attribute "URL"
 
