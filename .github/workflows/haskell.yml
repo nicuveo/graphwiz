@@ -144,7 +144,7 @@ jobs:
         run: cabal haddock all
 
       - name: "check: tests"
-        run: cabal test --test-options "--report=${{ env.REPORT_NAME }}" all
+        run: cabal test --test-options="--report=${{ env.REPORT_NAME }} --no-create" all
         id: tests
 
       - name: "cleanup: upload tests"

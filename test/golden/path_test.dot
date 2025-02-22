@@ -1,0 +1,30 @@
+strict graph {
+  subgraph cluster00 {
+    label="ROOT";
+    node01 [label="ROOT"]
+    subgraph cluster02 {
+      label="L";
+      node03 [label="ROOT > L"]
+      subgraph cluster04 {
+        label="L";
+        node05 [label="ROOT > L > L"]
+        subgraph cluster06 {
+          label="L";
+          node07 [label="ROOT > L > L > L"]
+        }
+        subgraph cluster08 {
+          label="R";
+          node09 [label="ROOT > L > L > R"]
+        }
+      }
+    }
+    subgraph cluster10 {
+      label="R";
+      node11 [label="ROOT > R"]
+      subgraph cluster12 {
+        label="L";
+        node13 [label="ROOT > R > L"]
+      }
+    }
+  }
+}
