@@ -33,7 +33,7 @@ import Text.Dot.Types
 -- >   attributes x <>:= [("fontcolor", "blue"), ("fontsize", "12")]
 --
 -- This function is best used with the provided field accessors, such as
--- 'fontcolor', to be more explicit about the way to deal with prevous values.
+-- 'fontcolor', to be more explicit about the way to deal with previous values.
 attributes :: Entity -> Lens' DotGraph Attributes
 attributes e = entityAttributes . at e . non mempty
 
@@ -58,7 +58,7 @@ attributes e = entityAttributes . at e . non mempty
 -- >   use (its fillcolor) -- Just "forestgreen"
 --
 -- This function is best used with the provided field accessors, such as
--- 'fontcolor', to be more explicit about the way to deal with prevous values.
+-- 'fontcolor', to be more explicit about the way to deal with previous values.
 defaults :: EntityType -> Lens' DotGraph Attributes
 defaults t = defaultAttributes . at t . non mempty
 

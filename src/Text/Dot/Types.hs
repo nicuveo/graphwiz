@@ -13,12 +13,12 @@ import Data.Hashable
 
 -- | Represents the type of a graph entity.
 --
--- DOT distinguishes between graphs, nodes, edges, graphs, and subgraphs /
--- clusters. This type differs slightly: we do not have a type for graphs, as it
+-- DOT distinguishes between graphs, nodes, edges, and subgraphs /
+-- clusters. This type differs slightly: it does not have a value for graphs, as it
 -- is never required, and we differentiate subgraphs and clusters.
 --
--- This type is used internally to distinguish entities, for the purpose of
--- default attributes (see 'Text.Dot.defaults').
+-- This type is used internally to distinguish entities, mostly for the purpose
+-- of default attributes (see 'Text.Dot.defaults').
 data EntityType = Node | Edge | Subgraph | Cluster
   deriving (Show, Eq, Ord, Enum, Bounded)
 
