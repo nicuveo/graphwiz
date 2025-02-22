@@ -13,9 +13,9 @@ It's a "wizard" for Graphviz's DOT format, hence the name "GraphWiz".
 
 ### Graph creation
 
-This library exports a simple monad: `Dot` (and its transformer version `DotT`), that you can only run with a function that indicates how the graph should be rendered: `graph`, `digraph`, `strictGraph`, `strictDigraph`. Within this monad, you can create graph elements with `node`, `edge` (or `-->`), `subgraph`, and `clusters`.
+This library exports a simple monad: `Dot` (and its transformer version `DotT`), that you can only run with a function that indicates how the graph should be rendered: `graph`, `digraph`, `strictGraph`, `strictDigraph`. Within this monad, you can create graph elements with `node`, `edge` (or `-->`), `subgraph`, `cluster`, and their variants.
 
-`node` and `edge` directly return an `Entity`, an ID that uniquely identifies them within the graph. The ID of the latest created entity (regardless of its type) can be accessed with `itsID`.
+All such functions that create an element return an `Entity`, an ID that uniquely identifies that element within the graph. Additionally, the ID of the latest created entity (regardless of its type) can be accessed with `itsID`.
 
 ```haskell
 digraph do
