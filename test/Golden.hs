@@ -19,7 +19,7 @@ go :: String -> TB.Builder -> TestTree
 go testname = goldenVsString testname filename . pure . builderToBytestring
   where
     filename = "test" </> "golden" </> intercalate "_" (words testname) <> ".dot"
-    builderToBytestring = T.encodeUtf8 . T.fromStrict . TB.run
+    builderToBytestring = T.encodeUtf8 . T.fromStrict . TB.run . (<> "\n")
 
 test =
   go "simple graph" $
@@ -85,3 +85,35 @@ test =
               its label ?= "cluster B3"
               node "b"
       clusterA1 --> clusterB3
+
+test =
+  go "path test" $
+    strictGraph do
+      cluster do
+        its label ?= "ROOT"
+        makeNode
+        cluster do
+          its label ?= "L"
+          makeNode
+          cluster do
+            its label ?= "L"
+            makeNode
+            cluster do
+              its label ?= "L"
+              makeNode
+            cluster do
+              its label ?= "R"
+              makeNode
+        cluster_ do
+          its label ?= "R"
+          makeNode
+          cluster do
+            its label ?= "L"
+            makeNode
+  where
+    makeNode = do
+      entityStack <- currentPath
+      path <- sequence do
+        eid <- toList entityStack
+        pure $ use $ attributes eid . label
+      node $ TB.run $ TB.intercalate " > " $ reverse $ map TB.text $ catMaybes path

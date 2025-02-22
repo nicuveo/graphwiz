@@ -46,7 +46,7 @@ module Text.Dot
   , MonadDot
   , DotGraph
   , Path
-  , path
+  , currentPath
   , rootGraph
     -- * Rendering the graph #render#
   , module Render

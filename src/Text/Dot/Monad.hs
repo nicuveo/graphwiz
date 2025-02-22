@@ -51,13 +51,13 @@ run e (DotT f) = snd <$> f (initialGraph e) (Path $ pure e)
 -- location.
 --
 -- > graph do
--- >   p1 <- path     -- returns [$graphID]
+-- >   p1 <- currentPath     -- returns [$graphID]
 -- >   subgraph do
 -- >     cluster do
--- >       p2 <- path -- returns [$clusterID, $subgraphID, $graphID]
+-- >       p2 <- currentPath -- returns [$clusterID, $subgraphID, $graphID]
 -- >       doStuff
-path :: MonadDot m => m (NonEmpty Entity)
-path = asks unwrapPath
+currentPath :: MonadDot m => m (NonEmpty Entity)
+currentPath = asks unwrapPath
 
 -- | Retrieves the unique ID of the last created t'Entity'.
 itsID :: MonadDot m => m Entity
