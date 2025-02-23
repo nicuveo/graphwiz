@@ -23,8 +23,10 @@ source-repository head
   type:     git
   location: https://github.com/nicuveo/graphwiz.git
 
-flag coverage
-  description: Whether coverage should be generated
+flag export-internals-for-coverage
+  description:
+    Whether internal modules should be exported so that coverage can be analyzed.
+
   default:     False
   manual:      True
 
@@ -60,7 +62,7 @@ common setup
 library
   import:         setup
 
-  if flag(coverage)
+  if flag(export-internals-for-coverage)
     other-modules:   Prelude
     exposed-modules:
       Text.Dot
@@ -97,9 +99,9 @@ test-suite tests
   type:               exitcode-stdio-1.0
   main-is:            Tests.hs
   other-modules:
+    Golden
     Prelude
     Reporter
-    Golden
 
   hs-source-dirs:     common test
   ghc-options:        -F -pgmF=tasty-autocollect
