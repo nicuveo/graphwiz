@@ -1,13 +1,16 @@
 # :mage_woman: GraphWiz
 
-[![build][Shield]][Action]
+[![build status][BuildShield]][BuildLink] [![hackage version][HackageShield]][HackageLink]
+
 
 GraphWiz provides a small monadic DSL to generate DOT files. It aims at being intuitive to use, by replicating in your code the structure of the resulting DOT file.
 
 It's a "wizard" for Graphviz's DOT format, hence the name "GraphWiz".
 
-[Action]: https://github.com/nicuveo/graphwiz/actions/workflows/haskell.yml?query=branch%3Amain
-[Shield]: https://img.shields.io/github/actions/workflow/status/nicuveo/graphwiz/haskell.yml?event=push&style=flat&branch=main&label=build
+[BuildLink]:   https://github.com/nicuveo/graphwiz/actions/workflows/haskell.yml?query=branch%3Amain
+[BuildShield]: https://img.shields.io/github/actions/workflow/status/nicuveo/graphwiz/haskell.yml?event=push&style=flat&branch=main&label=build
+[HackageLink]:   https://hackage.haskell.org/package/graphwiz
+[HackageShield]: https://img.shields.io/hackage/v/graphwiz
 
 ## Overview
 
