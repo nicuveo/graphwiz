@@ -74,7 +74,7 @@ graph do
 
 ## Full example
 
-From the [example](/example) folder:
+From the [example](example) folder:
 
 ##### Haskell source
 ```haskell
@@ -129,4 +129,4 @@ digraph {
 
 #### Resulting PNG
 
-![example of a generated PNG](/example/output.png)
+![example of a generated PNG](example/output.png)
