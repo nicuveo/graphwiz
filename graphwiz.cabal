@@ -15,7 +15,6 @@ description:        Small monadic DSL to build Graphviz DOT files.
 extra-source-files:
   .gitignore
   .stylish-haskell.yaml
-  example/output.png
   README.md
 
 extra-doc-files:    CHANGELOG.md
