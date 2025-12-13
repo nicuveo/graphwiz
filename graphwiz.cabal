@@ -1,7 +1,7 @@
 cabal-version:      3.4
 name:               graphwiz
 synopsis:           Monadic DOT graph builder DSL
-version:            1.0.0
+version:            2.0.0
 category:           Data, Text
 license:            BSD-3-Clause
 license-file:       LICENSE
