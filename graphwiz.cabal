@@ -90,7 +90,7 @@ library
     , lens                  >=5    && <6
     , mtl                   >=2    && <3
     , text                  >=2    && <3
-    , text-builder          <1
+    , text-builder          >=1    && <2
     , transformers          <1
     , unordered-containers  <1
 
@@ -134,4 +134,5 @@ executable example
     , base
     , graphwiz
     , lens
+    , text
     , text-builder

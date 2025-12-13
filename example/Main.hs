@@ -1,12 +1,13 @@
 module Main where
 
 import Control.Lens
-import Text.Builder qualified as TB
+import Data.Text.IO qualified as T
 import Text.Dot
+import TextBuilder  qualified as TB
 
 main :: IO ()
 main =
-  TB.putLnToStdOut $
+  T.putStrLn $ TB.toText $
     digraph do
       defaults Node . style ?= "filled"
 

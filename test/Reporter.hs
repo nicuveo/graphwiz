@@ -15,7 +15,7 @@ import Test.Tasty
 import Test.Tasty.Options
 import Test.Tasty.Providers
 import Test.Tasty.Runners
-import Text.Builder           qualified as TB
+import TextBuilder            qualified as TB
 
 
 -- custom CI reporter
@@ -97,8 +97,8 @@ mkRunner suiteName options testTree =
             , TB.text desc
             , "</td></tr>"
             ] <> "\n"
-      T.writeFile summaryFile $ TB.run ("| " <> summary <> " |\n")
-      T.writeFile failingFile $ TB.run failing
+      T.writeFile summaryFile $ TB.toText ("| " <> summary <> " |\n")
+      T.writeFile failingFile $ TB.toText failing
       pure $ failure == 0
 
 customFold :: StatusMap -> TreeFold (FoldMonad IO [([Text], Maybe Text)])

@@ -21,9 +21,9 @@ import "this" Prelude
 
 import Data.HashMap.Strict qualified as M
 import Data.List.NonEmpty  qualified as NE
-import Text.Builder        (Builder)
-import Text.Builder        qualified as TB
 import Text.Printf
+import TextBuilder         (TextBuilder)
+import TextBuilder         qualified as TB
 
 import Text.Dot.Monad
 import Text.Dot.Types
@@ -36,131 +36,132 @@ import Text.Dot.Types
 --
 -- Given a t'DotT' expression that builds a graph, this function evaluates it
 -- and builds an undirected non-strict graph. It returns the result in the
--- underlying monad, as a 'Builder'. The callback takes the graph's identifier
--- as argument.
+-- underlying monad, as a 'TextBuilder'. The callback takes the graph's
+-- identifier as argument.
 --
 -- The result of the graph building expression itself is ignored.
-graphWithT :: Monad m => (Entity -> DotT m a) -> m Builder
+graphWithT :: Monad m => (Entity -> DotT m a) -> m TextBuilder
 graphWithT = render "graph" "--"
 
 -- | Renders a given graph.
 --
 -- Like 'graphWithT', but the expression doesn't take the identifier as agument.
-graphT :: Monad m => DotT m a -> m Builder
+graphT :: Monad m => DotT m a -> m TextBuilder
 graphT = render "graph" "--" . const
 
 -- | Renders a given graph.
 --
 -- Like 'graphWithT', but in the 'Dot' monad.
-graphWith :: (Entity -> Dot a) -> Builder
+graphWith :: (Entity -> Dot a) -> TextBuilder
 graphWith = runIdentity . render "graph" "--"
 
 -- | Renders a given graph.
 --
 -- Like 'graphT', but in the 'Dot' monad.
-graph :: Dot a -> Builder
+graph :: Dot a -> TextBuilder
 graph = runIdentity . render "graph" "--" . const
 
 -- | Renders a given graph.
 --
 -- Given a t'DotT' expression that builds a graph, this function evaluates it
 -- and builds a directed non-strict graph. It returns the result in the
--- underlying monad, as a 'Builder'. The callback takes the graph's identifier
--- as argument.
+-- underlying monad, as a 'TextBuilder'. The callback takes the graph's
+-- identifier as argument.
 --
 -- The result of the graph building expression itself is ignored.
-digraphWithT :: Monad m => (Entity -> DotT m a) -> m Builder
+digraphWithT :: Monad m => (Entity -> DotT m a) -> m TextBuilder
 digraphWithT = render "digraph" "->"
 
 -- | Renders a given graph.
 --
 -- Like 'digraphWithT', but the expression doesn't take the entity as agument.
-digraphT :: Monad m => DotT m a -> m Builder
+digraphT :: Monad m => DotT m a -> m TextBuilder
 digraphT = render "digraph" "->" . const
 
 -- | Renders a given graph.
 --
 -- Like 'digraphWithT', but in the 'Dot' monad.
-digraphWith :: (Entity -> Dot a) -> Builder
+digraphWith :: (Entity -> Dot a) -> TextBuilder
 digraphWith = runIdentity . render "digraph" "->"
 
 -- | Renders a given graph.
 --
 -- Like 'digraphT', but in the 'Dot' monad.
-digraph :: Dot a -> Builder
+digraph :: Dot a -> TextBuilder
 digraph = runIdentity . render "digraph" "->" . const
 
 -- | Renders a given graph.
 --
 -- Given a t'DotT' expression that builds a graph, this function evaluates it
 -- and builds an undirected strict graph. It returns the result in the
--- underlying monad, as a 'Builder'. The callback takes the graph's identifier
--- as argument.
+-- underlying monad, as a 'TextBuilder'. The callback takes the graph's
+-- identifier as argument.
 --
 -- The result of the graph building expression itself is ignored.
-strictGraphWithT :: Monad m => (Entity -> DotT m a) -> m Builder
+strictGraphWithT :: Monad m => (Entity -> DotT m a) -> m TextBuilder
 strictGraphWithT = render "strict graph" "--"
 
 -- | Renders a given graph.
 --
 -- Like 'strictGraphWithT', but the expression doesn't take the entity as agument.
-strictGraphT :: Monad m => DotT m a -> m Builder
+strictGraphT :: Monad m => DotT m a -> m TextBuilder
 strictGraphT = render "strict graph" "--" . const
 
 -- | Renders a given graph.
 --
 -- Like 'strictGraphWithT', but in the 'Dot' monad.
-strictGraphWith :: (Entity -> Dot a) -> Builder
+strictGraphWith :: (Entity -> Dot a) -> TextBuilder
 strictGraphWith = runIdentity . render "strict graph" "--"
 
 -- | Renders a given graph.
 --
 -- Like 'strictGraphT', but in the 'Dot' monad.
-strictGraph :: Dot a -> Builder
+strictGraph :: Dot a -> TextBuilder
 strictGraph = runIdentity . render "strict graph" "--" . const
 
 -- | Renders a given graph.
 --
 -- Given a t'DotT' expression that builds a graph, this function evaluates it
 -- and builds a directed strict graph. It returns the result in the underlying
--- monad, as a 'Builder'. The callback takes the graph's identifier as argument.
+-- monad, as a 'TextBuilder'. The callback takes the graph's identifier as
+-- argument.
 --
 -- The result of the graph building expression itself is ignored.
-strictDigraphWithT :: Monad m => (Entity -> DotT m a) -> m Builder
+strictDigraphWithT :: Monad m => (Entity -> DotT m a) -> m TextBuilder
 strictDigraphWithT = render "strict digraph" "->"
 
 -- | Renders a given graph.
 --
 -- Like 'strictDigraphWithT', but the expression doesn't take the entity as agument.
-strictDigraphT :: Monad m => DotT m a -> m Builder
+strictDigraphT :: Monad m => DotT m a -> m TextBuilder
 strictDigraphT = render "strict digraph" "->" . const
 
 -- | Renders a given graph.
 --
 -- Like 'strictDigraphWithT', but in the 'Dot' monad.
-strictDigraphWith :: (Entity -> Dot a) -> Builder
+strictDigraphWith :: (Entity -> Dot a) -> TextBuilder
 strictDigraphWith = runIdentity . render "strict digraph" "->"
 
 -- | Renders a given graph.
 --
 -- Like 'strictDigraphT', but in the 'Dot' monad.
-strictDigraph :: Dot a -> Builder
+strictDigraph :: Dot a -> TextBuilder
 strictDigraph = runIdentity . render "strict digraph" "->" . const
 
 
 --------------------------------------------------------------------------------
 -- Internal helpers
 
-render :: Monad m => Builder -> Builder -> (Entity -> DotT m a) -> m Builder
+render :: Monad m => TextBuilder -> TextBuilder -> (Entity -> DotT m a) -> m TextBuilder
 render gtype arrow f = do
   let root = Entity Subgraph (-1)
   allGraph <- run root (f root)
   pure $ TB.intercalate "\n" $ visit allGraph gtype arrow root
 
-indent :: [Builder] -> [Builder]
+indent :: [TextBuilder] -> [TextBuilder]
 indent = map ("  " <>)
 
-visit :: DotGraph -> Builder -> Builder -> Entity -> [Builder]
+visit :: DotGraph -> TextBuilder -> TextBuilder -> Entity -> [TextBuilder]
 visit DotGraph {..} gtype arrow = visitGraph
   where
     magnitude = ceiling (logBase 10 (fromIntegral _entityIndex :: Double)) :: Int
@@ -209,8 +210,8 @@ visit DotGraph {..} gtype arrow = visitGraph
         , renderIndex p2
         , " ["
         , TB.intercalate "," $ visitAttributes $ attrs
-          <> M.fromList [("ltail", TB.run $ renderIndex o1) | getType o1 == Cluster]
-          <> M.fromList [("lhead", TB.run $ renderIndex o2) | getType o2 == Cluster]
+          <> M.fromList [("ltail", TB.toText $ renderIndex o1) | getType o1 == Cluster]
+          <> M.fromList [("lhead", TB.toText $ renderIndex o2) | getType o2 == Cluster]
         , "]"
         ]
 
