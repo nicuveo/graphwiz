@@ -10,8 +10,8 @@ Within the monad, you can use any of the [construction](#g:construction)
 functions to create one of the four graph [entities](#g:entities). Their
 attributes can be set via lenses such as '?=', see [attributes](#g:attributes).
 
-The output is a 'Text.Builder.Builder', that you can convert to a strict
-'Data.Text.Text' or print directly.
+The output is a 'TextBuilder.TextBuilder', that you can convert to a
+strict 'Data.Text.Text' or print directly.
 
 -}
 

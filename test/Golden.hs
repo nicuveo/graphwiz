@@ -12,14 +12,15 @@ import Data.Text.Lazy.Encoding qualified as T
 import System.FilePath
 import Test.Tasty
 import Test.Tasty.Golden
-import Text.Builder            qualified as TB
 import Text.Dot
+import TextBuilder             (TextBuilder)
+import TextBuilder             qualified as TB
 
-go :: String -> TB.Builder -> TestTree
+go :: String -> TextBuilder -> TestTree
 go testname = goldenVsString testname filename . pure . builderToBytestring
   where
     filename = "test" </> "golden" </> intercalate "_" (words testname) <> ".dot"
-    builderToBytestring = T.encodeUtf8 . T.fromStrict . TB.run . (<> "\n")
+    builderToBytestring = T.encodeUtf8 . T.fromStrict . TB.toText . (<> "\n")
 
 test =
   go "simple graph" $
@@ -116,4 +117,4 @@ test =
       path <- sequence do
         eid <- toList entityStack
         pure $ use $ attributes eid . label
-      node $ TB.run $ TB.intercalate " > " $ reverse $ map TB.text $ catMaybes path
+      node $ TB.toText $ TB.intercalate " > " $ reverse $ map TB.text $ catMaybes path
