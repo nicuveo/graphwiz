@@ -46,9 +46,9 @@ graphT do
   liftIO $ print =<< use (attributes x)
 ```
 
-### Text.Builder
+### TextBuilder
 
-For efficiency and convenience, the result of running the `Dot` monad is not a `String` or `Text`; it's a [Text.Builder](https://hackage.haskell.org/package/text-builder-0.6.7.3/docs/Text-Builder.html), that can be converted to a strict `Text` or even printed directly to the standard output.
+For efficiency and convenience, the result of running the `Dot` monad is not a `String` or `Text`; it's a [TextBuilder](https://hackage.haskell.org/package/text-builder-1.0.0.4/docs/TextBuilder.html), that can be converted to a strict `Text` or even printed directly to the standard output.
 
 ### Auto compound
 
