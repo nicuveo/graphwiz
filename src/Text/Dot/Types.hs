@@ -52,7 +52,7 @@ type Attributes = HashMap Text Text
 -- | A path through the graph.
 --
 -- This opaque type represents the path from the root to the current scope. The
--- current path can be obtained via 'Text.Dot.path'.
+-- current path can be obtained via 'Text.Dot.currentPath'.
 newtype Path = Path { unwrapPath :: NonEmpty Entity }
 
 makePrisms ''Path

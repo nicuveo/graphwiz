@@ -79,7 +79,7 @@ From the [example](example) folder:
 ##### Haskell source
 ```haskell
 main =
-  TB.putLnToStdOut $
+  T.putStrLn $ TB.toText $
     digraph do
       defaults Node . style ?= "filled"
 
