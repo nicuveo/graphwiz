@@ -64,6 +64,10 @@ node desc = do
 -- property will be set to true, and the edge will be adjusted to make use of
 -- 'lhead' or 'ltail' accordingly.
 --
+-- If an edge makes reference to a node that doesn't exist yet (see 'retrieve'),
+-- its declaration will be moved to the top level of the graph, but its
+-- attributes will remain unchanged.
+--
 -- This function updates the 'its' entity to this edge.
 edge
   :: (ToEdgeNode a, ToEdgeNode b, MonadDot m)
@@ -134,7 +138,20 @@ cluster_ = void . recurse Cluster
 -- | Associate the given entity to the given name.
 --
 -- The 'DotT' monad will store an association from the name to the entity,
--- allowing edges to be declared by making reference to that name.
+-- allowing edges to be declared by making reference to that name using
+-- 'Text.Dot.retrieve'.
+--
+-- > digraph do
+-- >   cluster_ do
+-- >     cluster_ do
+-- >       cluster_ do
+-- >         cluster_ do
+-- >           a <- node "A"
+-- >           register a "the A node"
+-- >   b <- node "B"
+-- >   edge (retrieve "the A node") b
+--
+-- See also 'Text.Dot.edge'.
 register :: MonadDot m => Entity -> Text -> m ()
 register entity name = do
   entityRegister %= M.insert name entity

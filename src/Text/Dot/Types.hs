@@ -49,7 +49,8 @@ rootGraph = Entity Subgraph (-1)
 -- When declaring an edge, each node can be described in two different ways:
 -- either via its 'Entity', or by using a 'Text' name.
 --
--- For more information, see 'edge', 'fromName', and 'register'.
+-- For more information, see 'Text.Dot.edge', 'Text.Dot.register', and
+-- 'Text.Dot.retrieve'.
 class ToEdgeNode a where
   toEdgeNode :: a -> EdgeNode
 
@@ -61,7 +62,20 @@ instance ToEdgeNode EdgeNode where
 
 -- | Constructs an edge node from the given text name.
 --
--- The node will be resolved at a later time; see 'register'.
+-- This allows for an edge to be declared using the name given to this
+-- function. The name won't be resolved immediately, but must be registered at
+-- some point within the graph.
+--
+-- > digraph do
+-- >   node "A"
+-- >   registerItAs "a"
+-- >
+-- >   edge (retrieve "a") (retrieve "b")
+-- >
+-- >   node "B"
+-- >   registerItAs "b"
+--
+-- See also 'Text.Dot.edge'.
 retrieve :: Text -> EdgeNode
 retrieve = UnknownNode
 
@@ -69,6 +83,12 @@ retrieve = UnknownNode
 --------------------------------------------------------------------------------
 -- Internal state
 
+-- | Opaque internal type.
+--
+-- Represent one end of an edge: either an 'Entity', or an arbitrary 'Text'
+-- name.
+--
+-- See also 'Text.Dot.edge' and 'retrieve'.
 data EdgeNode
   = KnownNode Entity
   | UnknownNode Text

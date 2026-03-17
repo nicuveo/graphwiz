@@ -30,7 +30,6 @@ module Text.Dot
   , its
   , ifAbsent
     -- * Construction #construction#
-  , ToEdgeNode
   , node
   , edge
   , (-->)
@@ -39,8 +38,10 @@ module Text.Dot
   , subgraph_
   , cluster
   , cluster_
-  , registerItAs
   , register
+  , registerItAs
+  , ToEdgeNode
+  , EdgeNode
     -- * Monad #monad#
   , DotT
   , Dot
