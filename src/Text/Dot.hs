@@ -35,13 +35,9 @@ module Text.Dot
   , edge
   , (-->)
   , retrieve
-  , subgraphWith
   , subgraph
-  , subgraphWith_
   , subgraph_
-  , clusterWith
   , cluster
-  , clusterWith_
   , cluster_
   , registerItAs
   , register

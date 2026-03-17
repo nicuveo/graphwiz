@@ -55,10 +55,10 @@ test =
 test =
   go "strict digraph with clusters" $
     strictDigraph do
-      a <- cluster_ do
+      a <- cluster do
         its label ?= "cluster A"
         node "a"
-      b <- cluster_ do
+      b <- cluster do
         its label ?= "cluster B"
         node "b"
       a --> b
@@ -68,23 +68,23 @@ test =
 test =
   go "automatic compound" $
     digraph do
-      (clusterA1, _) <-
+      cluster do
+        its label ?= "cluster A1"
+        registerItAs "clusterA1"
         cluster do
-          its label ?= "cluster A1"
+          its label ?= "cluster A2"
           cluster do
-            its label ?= "cluster A2"
-            cluster do
-              its label ?= "cluster A3"
-              node "a"
-      (clusterB3, _) <-
+            its label ?= "cluster A3"
+            node "a"
+      cluster_ do
+        its label ?= "cluster B1"
         cluster_ do
-          its label ?= "cluster B1"
-          cluster_ do
-            its label ?= "cluster B2"
-            cluster do
-              its label ?= "cluster B3"
-              node "b"
-      clusterA1 --> clusterB3
+          its label ?= "cluster B2"
+          cluster do
+            its label ?= "cluster B3"
+            registerItAs "clusterB3"
+            node "b"
+      retrieve "clusterA1" --> retrieve "clusterB3"
 
 test =
   go "path test" $

@@ -2,13 +2,9 @@ module Text.Dot.Build
   ( node
   , edge
   , (-->)
-  , subgraphWith
   , subgraph
-  , subgraphWith_
   , subgraph_
-  , clusterWith
   , cluster
-  , clusterWith_
   , cluster_
   , registerItAs
   , register
@@ -102,58 +98,38 @@ edge a b = do
 -- | Creates a subgraph in the given context.
 --
 -- The newly created subgraph will be assigned all of the default 'Subgraph'
--- attributes (see 'defaults'). The argument to this function is a callback that
--- takes the newly minted t'Entity' and creates the corresponding subgraph.
+-- attributes (see 'defaults'). The argument to this function is an action in
+-- the monad: all entities created in this action will be added to this new
+-- subgraph.
 --
 -- This function updates the 'its' entity to this node *twice*: before executing
 -- the callback, and before returning.
 --
 -- > graph do
--- >   (subgraphID, nodeID) <- subgraphWith \subgraphID -> do
+-- >   subgraph_ do
 -- >     its fontcolor ?= "green" -- points to the subgraph
 -- >     x <- node "x"
 -- >     its fontcolor ?= "red"   -- points to node "x"
 -- >     pure x
 -- >   use (its fontcolor)        -- points to the subgraph, returns green
 --
--- This returns a pair containing the subgraph's t'Entity' and the result of the
--- subexpression.
-subgraphWith :: MonadDot m => (Entity -> m a) -> m (Entity, a)
-subgraphWith = recurse Subgraph
+-- The resulting monadic action will return the value return by the given action.
+subgraph :: MonadDot m => m a -> m a
+subgraph = recurse Subgraph
 
--- | Like 'subgraphWith', but the subexpression doesn't take the t'Entity' as
--- argument.
-subgraph :: MonadDot m => m a -> m (Entity, a)
-subgraph = recurse Subgraph . const
+-- | Like 'subgraph', but ignores the result of the nested action.
+subgraph_ :: MonadDot m => m a -> m ()
+subgraph_ = void . recurse Subgraph
 
--- | Like 'subgraphWith', but does not return the subgraph's t'Entity'.
-subgraphWith_ :: MonadDot m => (Entity -> m a) -> m a
-subgraphWith_ = fmap snd . recurse Subgraph
-
--- | Like 'subgraphWith', but the subexpression doesn't take the t'Entity' as
--- argument, and it does not return the subgraph's t'Entity'.
-subgraph_ :: MonadDot m => m a -> m a
-subgraph_ = fmap snd . recurse Subgraph . const
-
--- | Like 'subgraphWith', but creates a cluster instead.
+-- | Like 'subgraph', but creates a cluster instead.
 --
 -- The created entity will use the default 'Cluster' attributes.
-clusterWith :: MonadDot m => (Entity -> m a) -> m (Entity, a)
-clusterWith = recurse Cluster
+cluster :: MonadDot m => m a -> m a
+cluster = recurse Cluster
 
--- | Like 'clusterWith', but the subexpression doesn't take the t'Entity' as
--- argument.
-cluster :: MonadDot m => m a -> m (Entity, a)
-cluster = recurse Cluster . const
-
--- | Like 'clusterWith', but does not return the cluster's t'Entity'.
-clusterWith_ :: MonadDot m => (Entity -> m a) -> m a
-clusterWith_ = fmap snd . recurse Cluster
-
--- | Like 'clusterWith', but the subexpression doesn't take the t'Entity' as
--- argument, and it does not return the cluster's t'Entity'.
-cluster_ :: MonadDot m => m a -> m a
-cluster_ = fmap snd . recurse Cluster . const
+-- | Like 'cluster', but ignores the result of the nested action.
+cluster_ :: MonadDot m => m a -> m ()
+cluster_ = void . recurse Cluster
 
 -- | Associate the given entity to the given name.
 --
@@ -176,15 +152,15 @@ registerItAs name = do
 --------------------------------------------------------------------------------
 -- Internal helpers
 
-recurse :: MonadDot m => EntityType -> (Entity -> m a) -> m (Entity, a)
-recurse etype callback = do
+recurse :: MonadDot m => EntityType -> m a -> m a
+recurse etype action = do
   entity <- record etype
   contextStack %= NE.cons mempty
-  result <- withPath entity $ callback entity
+  result <- withPath entity action
   sub <- popContext
   subgraphInfo . at entity ?= sub
   latest .= entity
-  pure (entity, result)
+  pure result
 
 record :: MonadDot m => EntityType -> m Entity
 record etype = do
