@@ -1,0 +1,13 @@
+digraph {
+  compound="true";
+  subgraph cluster0 {
+    label="cluster A";
+    node1 [label="node A"]
+  }
+  subgraph cluster3 {
+    label="cluster B";
+    node4 [label="node B"]
+  }
+  node1 -> node4 [color="red",lhead="cluster3"]
+  node4 -> node1 [color="green",lhead="cluster0"]
+}

@@ -10,11 +10,15 @@ module Text.Dot.Build
   , cluster
   , clusterWith_
   , cluster_
+  , registerItAs
+  , register
+  , retrieve
   ) where
 
 import "this" Prelude
 
 import Control.Lens
+import Data.HashMap.Strict qualified as M
 import Data.List.NonEmpty  qualified as NE
 
 import Text.Dot.Attributes
@@ -34,7 +38,7 @@ import Text.Dot.Types
 -- This function updates the 'its' entity to this node.
 node :: MonadDot m => Text -> m Entity
 node desc = do
-  entity <- register Node
+  entity <- record Node
   its label ?= desc
   pure entity
 
@@ -44,17 +48,35 @@ node desc = do
 -- (see 'defaults'). This returns a new t'Entity' that uniquely identifies this
 -- edge in the graph.
 --
--- If an entity is a cluster, we set the graph's "compound" property to true,
--- and we attempt to locate any node within it. If there isn't any, we fail
--- silently by outputing a valid but unexpected edge.
+-- There are two ways to specify each end of an edge: either by directly giving
+-- an entity, or by giving an entity's "name", registered via 'register', and
+-- obtained via 'retrieve'. The name is only resolved after the entire graph has
+-- been processed; this method allows the user to reference a node that has yet
+-- to be created, or to reference a node without manually propagating its
+-- entity.
+--
+-- > digraph do
+-- >   x <- node "x"
+-- >   y <- node "y"
+-- >   edge x y
+-- >   edge (retrieve "z node") x
+-- >   edge y (retrieve "z node")
+-- >   z <- node "z"
+-- >   registerItAs "z node"
+--
+-- If any of the two target entiies is a cluster, the root graph's "compound"
+-- property will be set to true, and the edge will be adjusted to make use of
+-- 'lhead' or 'ltail' accordingly.
 --
 -- This function updates the 'its' entity to this edge.
-edge :: MonadDot m => Entity -> Entity -> m Entity
+edge
+  :: (ToEdgeNode a, ToEdgeNode b, MonadDot m)
+  => a
+  -> b
+  -> m Entity
 edge a b = do
-  na <- getTail a
-  nb <- getHead b
-  entity <- register Edge
-  edgeInfo . at entity ?= EdgeInfo a b na nb
+  entity <- record Edge
+  edgeInfo . at entity ?= EdgeInfo (toEdgeNode a) (toEdgeNode b) Nothing Nothing
   pure entity
 
 -- | Alias for 'edge'.
@@ -70,7 +92,11 @@ edge a b = do
 -- >   x --> z
 --
 -- This function updates the 'its' entity to this edge.
-(-->) :: MonadDot m => Entity -> Entity -> m Entity
+(-->)
+  :: (ToEdgeNode a, ToEdgeNode b, MonadDot m)
+  => a
+  -> b
+  -> m Entity
 (-->) = edge
 
 -- | Creates a subgraph in the given context.
@@ -129,13 +155,30 @@ clusterWith_ = fmap snd . recurse Cluster
 cluster_ :: MonadDot m => m a -> m a
 cluster_ = fmap snd . recurse Cluster . const
 
+-- | Associate the given entity to the given name.
+--
+-- The 'DotT' monad will store an association from the name to the entity,
+-- allowing edges to be declared by making reference to that name.
+register :: MonadDot m => Entity -> Text -> m ()
+register entity name = do
+  entityRegister %= M.insert name entity
+
+-- | Associate the latest entity to the given name.
+--
+-- Like 'register', but uses the last created entity.
+registerItAs :: MonadDot m => Text -> m ()
+registerItAs name = do
+  currentEntity <- itsID
+  register currentEntity name
+
+
 
 --------------------------------------------------------------------------------
 -- Internal helpers
 
 recurse :: MonadDot m => EntityType -> (Entity -> m a) -> m (Entity, a)
 recurse etype callback = do
-  entity <- register etype
+  entity <- record etype
   contextStack %= NE.cons mempty
   result <- withPath entity $ callback entity
   sub <- popContext
@@ -143,8 +186,8 @@ recurse etype callback = do
   latest .= entity
   pure (entity, result)
 
-register :: MonadDot m => EntityType -> m Entity
-register etype = do
+record :: MonadDot m => EntityType -> m Entity
+record etype = do
   suffix <- use entityIndex
   let entity = Entity etype suffix
   defAttrs <- use $ defaultAttributes . at etype . non mempty
@@ -153,31 +196,3 @@ register etype = do
   attributes entity .= defAttrs
   latest .= entity
   pure entity
-
-getTail, getHead :: MonadDot m => Entity -> m Entity
-getTail eid =
-  case getType eid of
-    Cluster -> do
-      g <- rootGraph
-      attributes g . compound ?= "true"
-      fromMaybe eid <$> locateNode eid
-    _ -> pure eid
-getHead eid =
-  case getType eid of
-    Cluster -> do
-      g <- rootGraph
-      attributes g . compound ?= "true"
-      fromMaybe eid <$> locateNode eid
-    _ -> pure eid
-
-locateNode :: MonadDot m => Entity -> m (Maybe Entity)
-locateNode e = do
-  dg <- get
-  pure $ e ^? go dg
-  where
-    go dg f eid =
-      case getType eid of
-        Cluster  -> foldMapOf (subgraphInfo . at eid . traverse . traverse) (go dg f) dg
-        Subgraph -> foldMapOf (subgraphInfo . at eid . traverse . traverse) (go dg f) dg
-        Node     -> f eid
-        Edge     -> mempty

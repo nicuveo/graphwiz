@@ -21,6 +21,7 @@ module Text.Dot
   , EntityType (..)
   , getType
   , itsID
+  , rootGraph
     -- * Attributes #attributes#
   , Attributes
   , attributes
@@ -29,9 +30,11 @@ module Text.Dot
   , its
   , ifAbsent
     -- * Construction #construction#
+  , ToEdgeNode
   , node
   , edge
   , (-->)
+  , retrieve
   , subgraphWith
   , subgraph
   , subgraphWith_
@@ -40,6 +43,8 @@ module Text.Dot
   , cluster
   , clusterWith_
   , cluster_
+  , registerItAs
+  , register
     -- * Monad #monad#
   , DotT
   , Dot
@@ -47,7 +52,6 @@ module Text.Dot
   , DotGraph
   , Path
   , currentPath
-  , rootGraph
     -- * Rendering the graph #render#
   , module Render
     -- * Re-exports from "Control.Lens.Setter"

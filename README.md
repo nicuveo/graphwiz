@@ -31,9 +31,43 @@ digraph do
     b --> c
 ```
 
+### Node anchoring
+
+To avoid having to keep track of entities manually, it's possible to register any `Entity` under a given name, and to create edges by referring to that name. As names are resolved when the graph is complete, it is possible to make reference to a name that hasn't been registered yet, allowing for cycles:
+
+```haskell
+digraph do
+  cluster do
+    its label ?= "function entry"
+    n1 <- node "jump"
+    n1 --> retrieve "while condition"
+
+  cluster do
+    its label ?= "while condition"
+    registerItAs "while condition"
+    n1 <- node "test EQ"
+    n2 <- node "branch"
+    n1 --> n2
+    n2 --> retrieve "while body"
+    n2 --> retrieve "function end"
+
+  cluster do
+    its label ?= "while body"
+    registerItAs "while body"
+    n1 <- node "increment variable"
+    n2 <- node "jump"
+    n1 --> n2
+    n2 --> retrieve "while condition"
+
+  cluster do
+    its label ?= "function end"
+    registerItAs "function end"
+    node "return"
+```
+
 ### Attributes
 
-You can set default attributes for an entity type with `defaults`. You can access the attributes of a specific entity with `attributes`, and the latest created entity's attributes are accessible with `its`. All of those give you lenses to values within the underlying state; you can manipulate them with the `=` [lens operators](https://hackage.haskell.org/package/lens-5.3.3/docs/Control-Lens-Setter.html#g:5).
+Default attributes for an entity type can be set  with `defaults`, attributes of a specific entity with `attributes`. The latest created entity's attributes are accessible with `its`. All of those give you lenses to values within the underlying state; you can manipulate them with the `=` [lens operators](https://hackage.haskell.org/package/lens-5.3.3/docs/Control-Lens-Setter.html#g:5).
 
 Attributes are represented as a simple mapping from `Text` to `Text`, to avoid being too restrictive. There is, however, one lens per attribute listed in the [Graphviz documentation](https://graphviz.org/doc/info/attrs.html), allowing you to avoid strings in attributes declarations.
 

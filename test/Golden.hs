@@ -1,8 +1,7 @@
 {- AUTOCOLLECT.TEST -}
+{-# LANGUAGE OverloadedLists #-}
 
-module Golden
-  ( {- AUTOCOLLECT.TEST.export -}
-  ) where
+module Golden where
 
 import "this" Prelude
 
@@ -118,3 +117,20 @@ test =
         eid <- toList entityStack
         pure $ use $ attributes eid . label
       node $ TB.toText $ TB.intercalate " > " $ reverse $ map TB.text $ catMaybes path
+
+test =
+  go "cyclic graph" $
+    digraph do
+      cluster_ do
+        its label ?= "cluster A"
+        registerItAs "cA"
+        defaults Edge <>:= [("color", "red")]
+        na <- node "node A"
+        na --> retrieve "cB"
+      cluster_ do
+        its label ?= "cluster B"
+        registerItAs "cB"
+        defaults Edge <>:= [("color", "green")]
+        nb <- node "node B"
+        nb --> retrieve "cA"
+      pure ()

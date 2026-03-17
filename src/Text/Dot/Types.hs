@@ -6,6 +6,7 @@ import "this" Prelude
 
 import Control.Lens
 import Data.Hashable
+import TextBuilder    (TextBuilder)
 
 
 --------------------------------------------------------------------------------
@@ -39,9 +40,38 @@ instance Hashable Entity where
 getType :: Entity -> EntityType
 getType (Entity t _) = t
 
+-- | Unique entity of the top-level graph.
+rootGraph :: Entity
+rootGraph = Entity Subgraph (-1)
+
+-- | Describes types that can be used as the end of an edge.
+--
+-- When declaring an edge, each node can be described in two different ways:
+-- either via its 'Entity', or by using a 'Text' name.
+--
+-- For more information, see 'edge', 'fromName', and 'register'.
+class ToEdgeNode a where
+  toEdgeNode :: a -> EdgeNode
+
+instance ToEdgeNode Entity where
+  toEdgeNode = KnownNode
+
+instance ToEdgeNode EdgeNode where
+  toEdgeNode = id
+
+-- | Constructs an edge node from the given text name.
+--
+-- The node will be resolved at a later time; see 'register'.
+retrieve :: Text -> EdgeNode
+retrieve = UnknownNode
+
 
 --------------------------------------------------------------------------------
 -- Internal state
+
+data EdgeNode
+  = KnownNode Entity
+  | UnknownNode Text
 
 -- | An entity's attributes.
 --
@@ -59,7 +89,7 @@ makePrisms ''Path
 
 type DotContext = [Entity]
 
-data EdgeInfo = EdgeInfo Entity Entity Entity Entity
+data EdgeInfo = EdgeInfo EdgeNode EdgeNode (Maybe Entity) (Maybe Entity)
 
 -- | Internal opaque graph state.
 data DotGraph = DotGraph
@@ -67,6 +97,7 @@ data DotGraph = DotGraph
   , _entityAttributes  :: HashMap Entity Attributes
   , _edgeInfo          :: HashMap Entity EdgeInfo
   , _subgraphInfo      :: HashMap Entity DotContext
+  , _entityRegister    :: HashMap Text Entity
   , _contextStack      :: NonEmpty DotContext
   , _entityIndex       :: Int
   , _latest            :: Entity
@@ -74,5 +105,15 @@ data DotGraph = DotGraph
 
 makeLenses ''DotGraph
 
-initialGraph :: Entity -> DotGraph
-initialGraph = DotGraph mempty mempty mempty mempty (pure mempty) 0
+initialGraph :: DotGraph
+initialGraph = DotGraph mempty mempty mempty mempty mempty (pure mempty) 0 rootGraph
+
+data RenderState = RenderState
+  { _knownNodes   :: HashSet Entity
+  , _delayedEdges :: [TextBuilder]
+  }
+
+makeLenses ''RenderState
+
+initialRenderState :: RenderState
+initialRenderState = RenderState mempty mempty
