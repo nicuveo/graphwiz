@@ -28,6 +28,11 @@ test:
 coverage:
 	cabal test all --enable-coverage -f export-internals-for-coverage
 
+example:
+	cabal build all
+	cabal run example > example/output.dot
+	dot -Tpng example/output.dot > example/output.png
+
 candidate:
 	cabal sdist
 	cabal haddock --haddock-for-hackage --builddir documentation
@@ -35,4 +40,4 @@ candidate:
 	cabal upload -d $(DOCSTGZ)
 
 
-.PHONY: help build test coverage candidate
+.PHONY: help build test coverage candidate example
