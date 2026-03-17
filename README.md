@@ -117,7 +117,7 @@ main =
     digraph do
       defaults Node . style ?= "filled"
 
-      ast <- cluster_ do
+      ast <- cluster do
         its label ?= "front end"
 
         source <- node "source code"
@@ -135,18 +135,27 @@ main =
         its label ?= "middle end"
 
         ir <- node "IR"
-        its shape     ?= "diamond"
+        its shape   ?= "diamond"
         its fillcolor ?= "salmon"
 
         ast --> ir
         its label ?= "lowering"
         its style ?= "dotted"
+
+        ir --> retrieve "backend"
+
+      cluster do
+        its label ?= "back end"
+        registerItAs "backend"
+        node "{%1 = cmp %0,0 | br i1 i2 %1}"
+        its shape ?= "record"
 ```
 
 #### Resulting DOT file
 
 ```DOT
 digraph {
+  compound="true";
   subgraph cluster0 {
     label="front end";
     node1 [label="source code",style="filled",fillcolor="#c3ffd8"]
@@ -158,6 +167,11 @@ digraph {
     node5 [label="IR",style="filled",fillcolor="salmon",shape="diamond"]
     node2 -> node5 [label="lowering",style="dotted"]
   }
+  subgraph cluster8 {
+    label="back end";
+    node9 [label="{%1 = cmp %0,0 | br i1 i2 %1}",style="filled",shape="record"]
+  }
+  node5 -> node9 [lhead="cluster8"]
 }
 ```
 

@@ -35,3 +35,11 @@ main =
         ast --> ir
         its label ?= "lowering"
         its style ?= "dotted"
+
+        ir --> retrieve "backend"
+
+      cluster do
+        its label ?= "back end"
+        registerItAs "backend"
+        node "{%1 = cmp %0,0 | br i1 i2 %1}"
+        its shape ?= "record"
