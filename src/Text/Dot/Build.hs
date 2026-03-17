@@ -82,7 +82,7 @@ edge a b = do
 -- | Alias for 'edge'.
 --
 -- This can be used in both directed and undirected graphs: the rendering
--- process will tke care of using the correct symbol in the generated DOT file.
+-- process will take care of using the correct symbol in the generated DOT file.
 --
 -- > graph do
 -- >   x <- node "x"
@@ -117,11 +117,12 @@ edge a b = do
 -- >     pure x
 -- >   use (its fontcolor)        -- points to the subgraph, returns green
 --
--- The resulting monadic action will return the value return by the given action.
+-- The resulting monadic action will return the value returned by the given
+-- action.
 subgraph :: MonadDot m => m a -> m a
 subgraph = recurse Subgraph
 
--- | Like 'subgraph', but ignores the result of the nested action.
+-- | Like 'subgraph', but ignores the result of the provided action.
 subgraph_ :: MonadDot m => m a -> m ()
 subgraph_ = void . recurse Subgraph
 
@@ -131,7 +132,7 @@ subgraph_ = void . recurse Subgraph
 cluster :: MonadDot m => m a -> m a
 cluster = recurse Cluster
 
--- | Like 'cluster', but ignores the result of the nested action.
+-- | Like 'cluster', but ignores the result of the provided action.
 cluster_ :: MonadDot m => m a -> m ()
 cluster_ = void . recurse Cluster
 
